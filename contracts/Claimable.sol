@@ -64,4 +64,11 @@ abstract contract Claimable is Ownable {
     function setClaimers() public onlyOwner {
         // TODO: update claimers array
     }
+
+    /**
+    * @dev Resets the inactive timer. Only owner can do this
+     */
+    function resetTimer() internal onlyOwner {
+        // TODO: reset timer
+    }
 }
