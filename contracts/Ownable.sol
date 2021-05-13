@@ -1,11 +1,11 @@
-pragma solidity >=0.4.22;
+pragma solidity >=0.5.16;
 
 /**
 * @title Ownable
 * @dev The Ownable contract has an owner address, and provides basic authorization control
 * functions, this simplifies the implementation of "user permissions".
 */
-abstract contract Ownable  {
+contract Ownable  {
   address private _owner;
 
   event OwnershipTransferred(

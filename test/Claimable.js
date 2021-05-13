@@ -1,11 +1,20 @@
+const { AssertionError } = require("node:assert");
+
 const Claimable = artifacts.require("../contracts/Claimable.sol");
 
 /**
  * Run tests on Claimable.sol
  */
 contract("Claimable", accounts=> {
-    it ("initiates contract", async => {
+    let [guilherme, fernando, marcelo, matheus, filipe] = accounts;
+    let claimable;
+    
+    beforeEach(async () => {
+        claimable = await Claimable.deployed();
+    });
 
+    it ("checks owner", async => {
+        assert.equal(guilherme, claimable.owner(), "owner did not match.");
     });
 
     it ("tests only owner can change claimers", async => {

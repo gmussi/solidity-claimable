@@ -1,4 +1,4 @@
-pragma solidity >=0.4.22;
+pragma solidity >=0.5.16;
 
 import "./Ownable.sol";
 
@@ -12,7 +12,7 @@ import "./Ownable.sol";
 *
 * Example: If then owner spends more than 90 days without touching this contracts, person A can claim ownership
 */
-abstract contract Claimable is Ownable {
+contract Claimable is Ownable {
 
     address[] private _claimers; // addresses who are allowed to claim this contract
     uint private _maxInactiveTime; // how long must the owner be inactive before the contract can be claimed

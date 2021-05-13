@@ -1,0 +1,14 @@
+bin/solc-output-compile-all.json
+bin/contracts/Claimable.abi
+bin/contracts/Claimable.bin
+bin/contracts/Claimable.json
+bin/contracts/Migrations.abi
+bin/contracts/Migrations.bin
+bin/contracts/Migrations.json
+bin/contracts/Ownable.abi
+bin/contracts/Ownable.bin
+bin/contracts/Ownable.json
+build/contracts/Claimable.json
+build/contracts/Migrations.json
+build/contracts/Ownable.json
+.vscode/settings.json
