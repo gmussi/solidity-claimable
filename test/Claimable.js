@@ -9,15 +9,20 @@ contract("Claimable", (accounts) => {
     let [owner, guilherme, fernando, marcelo, matheus] = accounts;
 
     let claimable;
+    let snapshotId;
 
     /**
-     * Since there are time-sensitive tests, the first step is to ensure
-     * truffle has the correct timestamp
-     */
-    
-    
+    * Some tests require to advance ganache in time, this requires 
+    * obtaining a snapshotId and then reverting back before the test is over, 
+    * otherwise ganache will continue to create blocks in "the future". 
+    */    
     beforeEach(async () => {
         claimable = await Claimable.deployed();
+        snapshotId = await time.getSnapshotId();
+    });
+
+    afterEach(async () => {
+        await time.revertToSnapshot(snapshotId);
     });
 
     it ("should should be same as first account", async () => {
@@ -26,10 +31,12 @@ contract("Claimable", (accounts) => {
     });
 
     context("with the conrrect owner", async () => {
-        it ("should be able to change claimers", async () => {
-            await claimable.setClaimers([guilherme, fernando], {from: owner});
-            let _newClaimers = await claimable.getClaimers();
-            assert.sameMembers(_newClaimers, [guilherme, fernando], "claimers were not the same");
+        it ("should be able to add and remove claimers", async () => {
+            await claimable.addClaimer(guilherme, {from: owner});
+            assert.isTrue(await claimable.isClaimer(guilherme), "claimer was not added");
+
+            await claimable.removeClaimer(guilherme, {from: owner});
+            assert.isFalse(await claimable.isClaimer(guilherme), "claimer was not removed");
         });
 
         it ("should be able to change expiration time", async () => {
@@ -43,8 +50,9 @@ contract("Claimable", (accounts) => {
     });
 
     context("with the wrong owner", async () => {
-        it ("should not be able to change claimers", async () => {
-            await utils.shouldThrow(claimable.setClaimers([guilherme, fernando], {from: guilherme}));
+        it ("should not be able to add or remove claimers", async () => {
+            await utils.shouldThrow(claimable.addClaimer(guilherme, {from: guilherme}));
+            await utils.shouldThrow(claimable.removeClaimer(guilherme, {from: fernando}));
         });
 
         it ("should not be able to change expiration time", async () => {
@@ -54,42 +62,34 @@ contract("Claimable", (accounts) => {
         });
     });
 
+    
     it ("should be claimable only after the expiration time", async () => {
-        let snapshotId = await time.getSnapshotId();
-        console.log("snapshot id ", snapshotId);
-        console.log("revert ", await time.revertToSnapshot(snapshotId));
-
-        /*let truffleTime = await time.getTimestamp();
-        console.log("TRUFFLE TIME", truffleTime);
-        console.log("a", (await claimable.getNow()).toNumber());
-
         let nowInSeconds = Math.floor(Date.now() / 1000 ); // need time in seconds
         let newExpiration = nowInSeconds + (60 * 60); // add 1 hour
   
         await claimable.setExpirationTime(newExpiration, {from: owner});
 
-        assert.isFalse(await claimable.isClaimable());
+        assert.isFalse(await claimable.isClaimable()); // not claimable yet as 1 hour has not yet passed
 
-        console.log("b", (await claimable.getNow()).toNumber(), newExpiration);
+        await time.increase(time.duration.hours(2)); // advance ganache 2 hours in time
 
-        await time.increase(time.duration.hours(2));
-
-        console.log("c", (await claimable.getNow()).toNumber(), newExpiration);
-
-        assert.isTrue(await claimable.isClaimable());*/
+        assert.isTrue(await claimable.isClaimable()); // should be claimable now
     });
 
-    // await time.increase(time.duration.days(1));
+    it ("should be claimable only by specified addresses", async () => {
+        let nowInSeconds = Math.floor(Date.now() / 1000 ); // need time in seconds
+        let newExpiration = nowInSeconds + (60 * 60); // add 1 hour
+  
+        await claimable.setExpirationTime(newExpiration, {from: owner});
+        await claimable.addClaimer(guilherme, {from: owner}); // set claimers
 
-    /*it ("tests claiming with empty claim list (public)", async () => {
+        await time.increase(time.duration.hours(2)); // advance time to make it claimable
 
+        await claimable.claim({from: guilherme});
+
+        let _owner = await claimable.owner();
+        assert.equal(_owner, guilherme, "owner was different");
+
+        await time.revertToSnapshot(snapshotId);
     });
-
-    it ("tests only specified claimers can claim a contract with timer expired", async () => {
-
-    });
-
-    it ("tests OwnershipChange event is triffered after a claim", async () => {
-
-    });*/
 });

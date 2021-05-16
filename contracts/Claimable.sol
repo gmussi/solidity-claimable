@@ -13,22 +13,31 @@ import "./Ownable.sol";
 */
 contract Claimable is Ownable {
 
-    address[] private claimers; // addresses who are allowed to claim this contract
+    mapping (address => bool) private claimers; // addresses who are allowed to claim this contract
     uint private expirationTime; // stores time of last owner action + maxInactiveTime
 
     /**
-     * @dev Sets who can claim this contract
-     * @param _claimers an array with the addresses of the claimers who can claim this contract
+     * @dev Adds a new claimer to the contract
+     * @param _claimer address of the claimer to be added
      */
-    function setClaimers(address[] memory _claimers) public onlyOwner {
-        claimers = _claimers;
+    function addClaimer(address _claimer) public onlyOwner {
+        claimers[_claimer] = true;
     }
 
     /**
-     * @return the addresses who can claim this contract once the expiration time is reached
+     * @dev Removes a claimer from the contract
+     * @param _claimer address of the claimer to be removed
      */
-    function getClaimers() public view returns (address[] memory) {
-        return claimers;
+    function removeClaimer(address _claimer) public onlyOwner {
+        claimers[_claimer] = false;
+    }
+
+    /**
+     * @dev returns true if the specified address can claim this contract once the timer is expired
+     * @param _claimer address to verify
+     */
+    function isClaimer(address _claimer) public view returns (bool) {
+        return claimers[_claimer];
     }
 
     /**
@@ -41,7 +50,7 @@ contract Claimable is Ownable {
     }
 
     /**
-     * @return the current expiration time
+     * @dev Gets the current expiration time set in this contract
      */
     function getExpirationTime() public view returns (uint) {
         return expirationTime;
@@ -52,9 +61,10 @@ contract Claimable is Ownable {
      * Only addresses in claimers can claim, unless the array is empty.
      */
     function claim() public {
-        // TODO: require address to be in claimers OR claimers be empty
-        // TODO: require that expiration time is in the past
-        // TODO: update ownership       
+        require(claimers[msg.sender]);
+        require(this.isClaimable());
+
+        _transferOwnership(msg.sender);      
     }
     
     /**
