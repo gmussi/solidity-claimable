@@ -17,7 +17,7 @@ contract Claimable is Ownable {
     uint private expirationTime; // stores time of last owner action + maxInactiveTime
 
     /**
-     * @dev Adds a new claimer to the contract
+     * @notice Adds a new claimer to the contract
      * @param _claimer address of the claimer to be added
      */
     function addClaimer(address _claimer) public onlyOwner {
@@ -25,7 +25,7 @@ contract Claimable is Ownable {
     }
 
     /**
-     * @dev Removes a claimer from the contract
+     * @notice Removes a claimer from the contract
      * @param _claimer address of the claimer to be removed
      */
     function removeClaimer(address _claimer) public onlyOwner {
@@ -33,48 +33,60 @@ contract Claimable is Ownable {
     }
 
     /**
-     * @dev returns true if the specified address can claim this contract once the timer is expired
+     * @notice returns true if the caller has been added as claimer on this contract
      * @param _claimer address to verify
+     * @return true if the caller has been added as claimer, false, otherwise
      */
     function isClaimer(address _claimer) public view returns (bool) {
         return claimers[_claimer];
     }
 
     /**
-    * @dev allows the owner to set a new expiration time to extend the ownership of this contract
+    * @notice allows the owner to set a new expiration time to extend the ownership of this contract
     * @param _expirationTime the new expiration time for this contract
     */
     function setExpirationTime(uint _expirationTime) public onlyOwner {
-        require(_expirationTime > now);
         expirationTime = _expirationTime;
     }
 
     /**
-     * @dev Gets the current expiration time set in this contract
+     * @notice Gets the current expiration time set in this contract
+     * @return uint with the expiration time
      */
     function getExpirationTime() public view returns (uint) {
         return expirationTime;
     }
 
     /**
-     * @dev Claim ownership of the contract, once the max inactive time is reached. 
+     * @notice Claim ownership of the contract, once the max inactive time is reached. 
      * Only addresses in claimers can claim, unless the array is empty.
      */
     function claim() public {
-        require(claimers[msg.sender]);
-        require(this.isClaimable());
+        require(isClaimer(msg.sender));
+        require(now > expirationTime);
+        require(!isOwner());
 
         _transferOwnership(msg.sender);      
     }
     
     /**
-     * @dev tests if the contract can be claimed
+     * @notice Checks if the expiration date is passed and contract can be claimed.
+     * @dev The contract is claimable when the 3 results are true.
+     * @return bool: is a claimer, bool: is expired, bool: is not owner
      */
-    function isClaimable() public view returns (bool) {
-        return now > expirationTime;
+    function isClaimable() public view returns (bool, bool, bool) {
+        return (isClaimer(msg.sender), now > expirationTime, !isOwner());
     }
 
-    function getNow() public view returns (uint) {
-        return uint(now);
+    /**
+    * @notice returns the owner of this contract, the expiration date and if the caller is one of the claimers
+    * @return (address: owner of this contract, uint: the expiration date, bool: is caller a claimers?)
+    */
+    function read() public view returns (address, uint, bool) {
+        return (owner(), expirationTime, isClaimer(msg.sender));
+    }
+
+    function debugnow() public view returns (uint) {
+        return now;
     }
 }

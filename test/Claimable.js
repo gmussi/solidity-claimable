@@ -69,11 +69,11 @@ contract("Claimable", (accounts) => {
   
         await claimable.setExpirationTime(newExpiration, {from: owner});
 
-        assert.isFalse(await claimable.isClaimable()); // not claimable yet as 1 hour has not yet passed
+        assert.isFalse((await claimable.isClaimable())[1]); // not claimable yet as 1 hour has not yet passed
 
         await time.increase(time.duration.hours(2)); // advance ganache 2 hours in time
 
-        assert.isTrue(await claimable.isClaimable()); // should be claimable now
+        assert.isTrue((await claimable.isClaimable())[1]); // should be claimable now
     });
 
     it ("should be claimable only by specified addresses", async () => {
@@ -91,5 +91,9 @@ contract("Claimable", (accounts) => {
         assert.equal(_owner, guilherme, "owner was different");
 
         await time.revertToSnapshot(snapshotId);
+    });
+
+    it ("reading info from contract should work", async () => {
+        await claimable.read();
     });
 });

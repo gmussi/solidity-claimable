@@ -1,0 +1,226 @@
+<html>
+    <head>
+        <title>Claimable Contract Console</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.3.5/web3.min.js" integrity="sha512-S/O+gH5szs/+/dUylm15Jp/JZJsIoWlpSVMwT6yAS4Rh7kazaRUxSzFBwnqE2/jBphcr7xovTQJaopiEZAzi+A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script>
+            const abi = 
+            [{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"constant":false,"inputs":[{"internalType":"address","name":"_claimer","type":"address"}],"name":"addClaimer","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"claim","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"debugnow","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getExpirationTime","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"isClaimable","outputs":[{"internalType":"bool","name":"","type":"bool"},{"internalType":"bool","name":"","type":"bool"},{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"address","name":"_claimer","type":"address"}],"name":"isClaimer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"isOwner","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"read","outputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"_claimer","type":"address"}],"name":"removeClaimer","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"renounceOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"uint256","name":"_expirationTime","type":"uint256"}],"name":"setExpirationTime","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"}]
+        </script>
+    </head>
+    <body style="font-family: Arial;">
+        <div id="ethereum_enabled">
+            <p>My address is: <span id="my_address"></span></p>
+            <hr>
+
+            <p>Enter a contract address: 
+                <input type="text" id="contract_address" placeholder="0x..." value="0xD7DF5986eC39cEb222a78ab18532fac107DE0E12"></input>
+                <button id="load_contract">Load contract</button>
+            </p>
+
+            <h2>Contract details</h2>
+            <p><strong>Contract address:</strong> <span id="c_address"></span></p>
+            <p><strong>Contract owner:</strong> <span id="c_owner"></span></p>
+            <p><strong>Am I owner?</strong> <span id="c_isOwner"></span></p>
+            <p><strong>Contract expiration:</strong> <span id="c_expiration"></span></p>
+            <p><strong>Expires in:</strong> <span id="c_expires_in"></span></p>
+            <p><strong>Am I claimer?</strong> <span id="c_isClaimer"></span></p>
+
+            <h2>Actions</h2>
+            <p>Change expiration date: 
+                <input type="text" id="new_expiration" placeholder="2021-05-12 23:00:00"></input>
+                <button id="change_expiration">Set expiration</button>
+            </p>
+            <p>Add a claimer: 
+                <input type="text" id="add_claimer_address" placeholder="0x..."></input>
+                <button id="add_claimer">Add</button>
+            </p>
+            <p>Remove a claimer: 
+                <input type="text" id="remove_claimer_address" placeholder="0x..."></input>
+                <button id="remove_claimer">Remove</button>
+            </p>
+            <p>Claim this contract: 
+                <button id="claim">Claim!</button>
+                <span id="is_claimer"></span>
+                <span id="is_expired"></span>
+                <span id="is_owner"></span>
+            </p>
+           
+        </div>
+        <script>
+            // define variables for the application
+            var GLOBAL = {
+                myaddress:null, // the address in use, coming from metamask
+                owner:null, // the current owner of this contract
+                isOwner: false, // is the current user the same as the owner (case-insensitive)
+                expiration:null, // the expiration time of the contract
+                isClaimer:null // is the current address a claimer in this contract?
+            }, claimable; // the instance of the smart contract 
+            
+            /**
+             * Check if Ethereum/MetaMask is installed on the browser
+             */
+            const ethEnabled = async () => {  
+                if (window.ethereum) {    
+                    await ethereum.request({ method: 'eth_requestAccounts' });
+                    window.web3 = new Web3(window.ethereum);    
+                    return true;  
+                }  return false;
+            }
+
+            /**
+             * Reloads a contract information from the address provided
+             */
+            const reloadContract = async () => {
+                let address = document.getElementById('contract_address').value;
+                if (address.length > 0) {
+                    claimable = new web3.eth.Contract(abi, address, {
+                        from: GLOBAL.myaddress
+                    });
+                    let {0: owner, 1: expirationTime, 2: isClaimer} = await claimable.methods.read().call();
+                    GLOBAL.owner = owner;
+                    GLOBAL.expiration = parseInt(expirationTime) * 1000;
+                    GLOBAL.isOwner = owner.toLowerCase() == GLOBAL.myaddress.toLowerCase();
+                    GLOBAL.isClaimer = isClaimer;
+                    document.getElementById("c_address").innerHTML = address;
+                    document.getElementById("c_owner").innerHTML = owner;
+                    document.getElementById("c_isOwner").innerHTML = GLOBAL.isOwner;
+                    document.getElementById("c_expiration").innerHTML = moment(parseInt(GLOBAL.expiration)).format("YYYY-MM-DD HH:mm:ss") + " (" + expirationTime + ")";
+                    document.getElementById("c_isClaimer").innerHTML = isClaimer;
+                }
+            }
+
+            /**
+             * Sets a new expiration date for the contract
+             */
+            const setExpirationTime = async () => {
+                let input = moment(document.getElementById("new_expiration").value);
+                let newExpiration = Math.floor(parseInt(input.format("x")) / 1000); // needs to save in seconds, not milliseconds
+                await claimable.methods.setExpirationTime(web3.eth.abi.encodeParameter('uint256', newExpiration)).send({
+                    from: GLOBAL.myaddress
+                });
+                
+            };
+
+            /**
+             * Adds an address as a claimer
+             */
+            const addClaimer = async () => {
+                let input = document.getElementById("add_claimer_address").value;
+                await claimable.methods.addClaimer(input).send({
+                    from: GLOBAL.myaddress
+                });
+            };
+
+            /**
+             * Remove an address from the claimers list
+             */
+             const removeClaimer = async () => {
+                let input = document.getElementById("remove_claimer_address").value;
+                await claimable.methods.removeClaimer(input).send({
+                    from: GLOBAL.myaddress
+                });
+            };
+
+            /**
+             * Validates if the contract can be claimed and then claim the contract, 
+             * or if contract cannot be claimed, display an alert stating the reason 
+             */
+            const claim = async () => {
+                if (!GLOBAL.isClaimer) { 
+                    alert("You are not a claimer of this contract");
+                } else if (Date.now() < new Date(GLOBAL.expiration)) {
+                    alert("Contract is not expired yet")
+                } else if (GLOBAL.isOwner) {
+                    alert("You already own this contract")
+                } else {
+                    let result = await claimable.methods.claim().send({
+                        from: GLOBAL.myaddress
+                    });
+                }
+                
+
+            };
+            
+            /**
+             * When page loads, start the setup
+             */
+            window.addEventListener('load', () => {
+                if (ethEnabled()) {
+                    // keep checking for current address
+                    setInterval(() => {
+                        let selectedAddress = web3.currentProvider.selectedAddress;
+                        if (!GLOBAL.myaddress || GLOBAL.myaddress.toLowerCase() != selectedAddress.toLowerCase()) {
+                            document.getElementById("my_address").innerHTML = GLOBAL.myaddress = selectedAddress;
+                            reloadContract();
+                        }
+                        if (GLOBAL.expiration != null) {
+                            document.getElementById("c_expires_in").innerHTML = moment(GLOBAL.expiration).fromNow();
+                        }
+                    }, 500);
+
+                    // keep checking the claimable state
+                    setInterval(async () => {
+                        if (claimable != null) {
+                            let {0: isClaimer, 1: isExpired, 2: isOwner} = await claimable.methods.isClaimable().call();
+                            document.getElementById('is_claimer').innerHTML = isClaimer ? "Already claimer." : "Needs to be a claimer.";
+                            document.getElementById('is_claimer').style.color = isClaimer ? "green" : "red";
+                            document.getElementById('is_expired').innerHTML = isExpired ? "Expired." : "Not expired.";
+                            document.getElementById('is_expired').style.color = isExpired ? "green" : "red";
+                            document.getElementById('is_owner').innerHTML = isOwner ? "Not owner yet." : "Already owner.";
+                            document.getElementById('is_owner').style.color = isOwner ? "green" : "red";
+                        }
+                    }, 2000);
+
+                    // sets a value on the field for new expiration
+                    let expiration = moment().add(30, "minutes").format("YYYY-MM-DD HH:mm:ss");
+                    document.getElementById('new_expiration').value = expiration;
+
+                    // load contract info when button is clicked
+                    document.getElementById('load_contract').onclick = async () => {
+                        reloadContract();
+                    };
+
+                    // listen for Set Expiration button
+                    document.getElementById('change_expiration').onclick = async () => {
+                        await setExpirationTime();
+                        reloadContract();
+                    };
+
+                    // listen for Add Claimer button
+                    document.getElementById('add_claimer').onclick = async () => {
+                        await addClaimer();
+                        reloadContract();
+                    };
+
+                    // listen for Add Claimer button
+                    document.getElementById('remove_claimer').onclick = async () => {
+                        await removeClaimer();
+                        reloadContract();
+                    };
+
+                    // listen for Claim contract button
+                    document.getElementById('claim').onclick = async () => {
+                        await claim();
+                        reloadContract();
+                    };
+                }
+            });
+        </script>
+    </body>
+</html>
+
+            <!--
+            <table>
+                <thead>
+                    <tr>
+                        <th>Account</th>
+                        <th>Name</th>
+                        <th>Website</th>
+                    </tr>
+                </thead>
+                <tbody id="account_list">
+                    
+                </tbody>
+            </table>
+            -->
