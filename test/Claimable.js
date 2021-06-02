@@ -62,7 +62,6 @@ contract("Claimable", (accounts) => {
         });
     });
 
-    
     it ("should be claimable only after the expiration time", async () => {
         let nowInSeconds = Math.floor(Date.now() / 1000 ); // need time in seconds
         let newExpiration = nowInSeconds + (60 * 60); // add 1 hour
@@ -91,6 +90,44 @@ contract("Claimable", (accounts) => {
         assert.equal(_owner, guilherme, "owner was different");
 
         await time.revertToSnapshot(snapshotId);
+    });
+
+    context("with events in mind", async () => {
+        it ("should emit event when expiration changes", async () => {
+            // assert.equal(response.logs[index].event, eventName, eventName + ' event should fire.');
+            let nowInSeconds = Math.floor(Date.now() / 1000/*milliseconds*/ ); // need time in seconds
+            let newExpiration = nowInSeconds + (60/*seconds*/ * 60/*minutes*/ ); // add 1 hour
+            let response = await claimable.setExpirationTime(newExpiration, {from: owner});
+
+            assert.equal(response.logs[0].event, "ExpirationUpdated", "event not fired");
+        });
+
+        it ("should emit event when claimer is added", async () => {
+            let response = await claimable.addClaimer(guilherme, {from: owner});
+            assert.equal(response.logs[0].event, "ClaimerAdded", "event not fired");
+        });
+
+        it ("should emit event when claimer is removed", async () => {
+            await claimable.addClaimer(guilherme, {from: owner});
+            let response = await claimable.removeClaimer(guilherme, {from: owner});
+            assert.equal(response.logs[0].event, "ClaimerRemoved", "event not fired");
+        });
+
+        it ("should emit event when owner changes", async () => {
+            let nowInSeconds = Math.floor(Date.now() / 1000 ); // need time in seconds
+            let newExpiration = nowInSeconds + (60 * 60); // add 1 hour
+    
+            await claimable.setExpirationTime(newExpiration, {from: owner});
+            await claimable.addClaimer(guilherme, {from: owner}); // set claimers
+
+            await time.increase(time.duration.hours(2)); // advance time to make it claimable
+
+            let response = await claimable.claim({from: guilherme});
+
+            assert.equal(response.logs[0].event, "OwnershipTransferred", "event not fired");
+
+            await time.revertToSnapshot(snapshotId);
+        });
     });
 
     it ("reading info from contract should work", async () => {

@@ -5,7 +5,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script>
             const abi = 
-            [{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"constant":false,"inputs":[{"internalType":"address","name":"_claimer","type":"address"}],"name":"addClaimer","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"claim","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"debugnow","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getExpirationTime","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"isClaimable","outputs":[{"internalType":"bool","name":"","type":"bool"},{"internalType":"bool","name":"","type":"bool"},{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"address","name":"_claimer","type":"address"}],"name":"isClaimer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"isOwner","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"read","outputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"_claimer","type":"address"}],"name":"removeClaimer","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"renounceOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"uint256","name":"_expirationTime","type":"uint256"}],"name":"setExpirationTime","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"}]
+            [{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"claimer","type":"address"}],"name":"ClaimerAdded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"claimer","type":"address"}],"name":"ClaimerRemoved","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"oldExpiration","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"newExpiration","type":"uint256"}],"name":"ExpirationUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"constant":false,"inputs":[{"internalType":"address","name":"_claimer","type":"address"}],"name":"addClaimer","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"claim","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"debugnow","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getExpirationTime","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"isClaimable","outputs":[{"internalType":"bool","name":"","type":"bool"},{"internalType":"bool","name":"","type":"bool"},{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"address","name":"_claimer","type":"address"}],"name":"isClaimer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"isOwner","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"read","outputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"_claimer","type":"address"}],"name":"removeClaimer","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"renounceOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"uint256","name":"_expirationTime","type":"uint256"}],"name":"setExpirationTime","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"}]
         </script>
     </head>
     <body style="font-family: Arial;">
@@ -14,7 +14,7 @@
             <hr>
 
             <p>Enter a contract address: 
-                <input type="text" id="contract_address" placeholder="0x..." value="0xD7DF5986eC39cEb222a78ab18532fac107DE0E12"></input>
+                <input type="text" id="contract_address" placeholder="0x..." value="0x37A3A6f00da9Bcb9dF77F6c67FB08c915C360E5D"></input>
                 <button id="load_contract">Load contract</button>
             </p>
 
@@ -45,6 +45,11 @@
                 <span id="is_expired"></span>
                 <span id="is_owner"></span>
             </p>
+
+            <h2>Events <span id="is_connected">(Not listening)</span></h2>
+            <div id="events">
+
+            </div>
            
         </div>
         <script>
@@ -55,7 +60,8 @@
                 isOwner: false, // is the current user the same as the owner (case-insensitive)
                 expiration:null, // the expiration time of the contract
                 isClaimer:null // is the current address a claimer in this contract?
-            }, claimable; // the instance of the smart contract 
+            }, claimable, // the instance of the smart contract
+            eventListener; // listens for events on the contract 
             
             /**
              * Check if Ethereum/MetaMask is installed on the browser
@@ -88,6 +94,40 @@
                     document.getElementById("c_expiration").innerHTML = moment(parseInt(GLOBAL.expiration)).format("YYYY-MM-DD HH:mm:ss") + " (" + expirationTime + ")";
                     document.getElementById("c_isClaimer").innerHTML = isClaimer;
                 }
+                if (eventListener != null) {
+                   eventListener.unsubscribe();
+                }
+
+                // listen for events
+                eventListener = claimable.events.allEvents();
+                eventListener.on("connected", () => {
+                    document.getElementById("is_connected").innerHTML = "(Connected)";
+                }).on("error", (err) => {
+                    document.getElementById("is_connected").innerHTML = "(Not connected)";
+                    console.log(err);
+                }).on("data", (event) => {
+                    let div = document.createElement("div");
+                    switch (event.event) {
+                        case "ExpirationUpdated":
+                            let oldExpiration = new Date(parseInt(event.returnValues.oldExpiration) * 1000);
+                            let newExpiration = new Date(parseInt(event.returnValues.newExpiration) * 1000);
+                            div.innerHTML = `<p>Expiration date changed from <strong>${oldExpiration.toGMTString()}</strong> to <strong>${newExpiration.toGMTString()}</strong></p>`
+                            break;
+                        case "ClaimerAdded":
+                            div.innerHTML = `<p>Claimer added: ${event.returnValues.claimer}</p>`;
+                            break;
+                        case "ClaimerRemoved":
+                            div.innerHTML = `<p>Claimer removed: ${event.returnValues.claimer}</p>`;
+                            break;
+                        case "OwnershipTransferred": 
+                            div.innerHTML = `<p>Ownership transfered from ${event.returnValues.previousOwner} to ${event.returnValues.newOwner}</p>`;
+                            break;
+                        default:
+                            console.log(event);
+                    }
+                    document.getElementById("events").appendChild(div);
+                });
+                
             }
 
             /**
@@ -204,6 +244,8 @@
                         await claim();
                         reloadContract();
                     };
+
+                    
                 }
             });
         </script>

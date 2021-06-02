@@ -17,11 +17,21 @@ contract Claimable is Ownable {
     uint private expirationTime; // stores time of last owner action + maxInactiveTime
 
     /**
+     * Throw event to inform listeners of what is happening
+     */
+    event ClaimerAdded ( address indexed claimer );
+    event ClaimerRemoved ( address indexed claimer );
+    event ExpirationUpdated ( uint oldExpiration, uint newExpiration );
+
+    /**
      * @notice Adds a new claimer to the contract
      * @param _claimer address of the claimer to be added
      */
     function addClaimer(address _claimer) public onlyOwner {
+        require(! claimers[_claimer] ); // ensure claimer has not been added already 
+
         claimers[_claimer] = true;
+        emit ClaimerAdded (_claimer);
     }
 
     /**
@@ -29,7 +39,10 @@ contract Claimable is Ownable {
      * @param _claimer address of the claimer to be removed
      */
     function removeClaimer(address _claimer) public onlyOwner {
+        require(claimers[_claimer] ); // ensure address is claimer
+
         claimers[_claimer] = false;
+        emit ClaimerRemoved(_claimer);
     }
 
     /**
@@ -46,7 +59,11 @@ contract Claimable is Ownable {
     * @param _expirationTime the new expiration time for this contract
     */
     function setExpirationTime(uint _expirationTime) public onlyOwner {
+        uint oldExpiration = expirationTime;
+
         expirationTime = _expirationTime;
+
+        emit ExpirationUpdated(oldExpiration, _expirationTime);
     }
 
     /**
