@@ -1,0 +1,29 @@
+{
+  "name": "gmussi-claimable",
+  "author": "Guilherme Mussi <gmussi@gmail.com>",
+  "version": "1.0.0",
+  "description": "A package with Ownable and Claimable concepts for solidity, to be used as import by other contracts.",
+  "files": [
+    "/contracts/**/*.sol",
+    "/build/contracts/*.json"
+  ],
+  "scripts": {
+    "compile": "truffle compile-all",
+    "test": "truffle test",
+    "gui": "node gui/run.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gmussi/solidity-claimable.git"
+  },
+  "license": "MIT",
+  "keywords": [
+    "solidity",
+    "ethereum",
+    "blockchain",
+    "smart",
+    "contracts",
+    "security",
+    "dapp"
+  ]
+}
