@@ -1,5 +1,5 @@
 {
-  "name": "gmussi-claimable",
+  "name": "@gmussi-contracts/gmussi-claimable",
   "author": "Guilherme Mussi <gmussi@gmail.com>",
   "version": "1.0.0",
   "description": "A package with Ownable and Claimable concepts for solidity, to be used as import by other contracts.",
@@ -10,7 +10,8 @@
   "scripts": {
     "compile": "truffle compile-all",
     "test": "truffle test",
-    "gui": "node gui/run.js"
+    "gui": "node gui/run.js",
+    "publish": "npm publish --access=public"
   },
   "repository": {
     "type": "git",
