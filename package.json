@@ -1,7 +1,7 @@
 {
   "name": "@gmussi-contracts/gmussi-claimable",
   "author": "Guilherme Mussi <gmussi@gmail.com>",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "A package with Ownable and Claimable concepts for solidity, to be used as import by other contracts.",
   "files": [
     "/contracts/**/*.sol",

@@ -1,4 +1,5 @@
-pragma solidity >=0.5.16;
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0;
 
 import "./Ownable.sol";
 
@@ -80,7 +81,7 @@ contract Claimable is Ownable {
      */
     function claim() public {
         require(isClaimer(msg.sender));
-        require(now > expirationTime);
+        require(block.timestamp > expirationTime);
         require(!isOwner());
 
         _transferOwnership(msg.sender);      
@@ -92,7 +93,7 @@ contract Claimable is Ownable {
      * @return bool: is a claimer, bool: is expired, bool: is not owner
      */
     function isClaimable() public view returns (bool, bool, bool) {
-        return (isClaimer(msg.sender), now > expirationTime, !isOwner());
+        return (isClaimer(msg.sender), block.timestamp > expirationTime, !isOwner());
     }
 
     /**
@@ -101,9 +102,5 @@ contract Claimable is Ownable {
     */
     function read() public view returns (address, uint, bool) {
         return (owner(), expirationTime, isClaimer(msg.sender));
-    }
-
-    function debugnow() public view returns (uint) {
-        return now;
     }
 }
